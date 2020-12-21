@@ -1,1 +1,2 @@
-*.tex linguist-language=R
+*.aux linguist-language=R
+*.out linguist-language=R
