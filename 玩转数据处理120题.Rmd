@@ -173,7 +173,7 @@ df$grammer
 **代码及运行结果：**
 
 ```{r}
-writexl::write_xlsx(df, "filename.xlsx")
+writexl::write_xlsx(df, "datas/filename.xlsx")
 ```
 
 
@@ -298,7 +298,7 @@ df %>%
 **代码及运行结果：**
 
 ```{r}
-df = readxl::read_xlsx("21-50数据.xlsx")
+df = readxl::read_xlsx("datas/21-50数据.xlsx")
 df
 ```
 
@@ -710,7 +710,7 @@ df %>%
 
 
 ```{r}
-df = readxl::read_xls("51-80数据.xls")
+df = readxl::read_xls("datas/51-80数据.xls")
 df
 ```
   
@@ -1398,7 +1398,7 @@ dist(t(df[,1:2]))
 **代码及运行结果：**
 
 ```{r}
-read.csv("数据1_101-120涉及.csv", nrows = 10) %>% 
+read.csv("datas/数据1_101-120涉及.csv", nrows = 10) %>% 
   select(positionName, salary)
 ```
 
@@ -1414,7 +1414,7 @@ read.csv("数据1_101-120涉及.csv", nrows = 10) %>%
 **代码及运行结果：**
 
 ```{r}
-df = read_csv("数据2_101-120涉及.csv") %>% 
+df = read_csv("datas/数据2_101-120涉及.csv") %>% 
   mutate(薪资水平 = if_else(薪资水平 > 10000, "高", "低"))
 ```
 
@@ -1530,7 +1530,7 @@ df1 %>%
 **代码及运行结果：**
 
 ```{r message=FALSE}
-df <- read_csv("数据1_101-120涉及.csv", 
+df <- read_csv("datas/数据1_101-120涉及.csv", 
           locale = locale(encoding = "GBK")) %>%
 glimpse()
 ```
