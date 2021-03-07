@@ -22,6 +22,20 @@ knitr::opts_chunk$set(
 options(tibble.print_max = 6, tibble.print_min = 6)
 ```
 
+**关于作者**：
+
+- 张敬信，哈尔滨商业大学，数学与应用数学，副教授
+- 热爱学习，热爱编程，热爱 R 语言
+- 我正在用最新 R 技术写一本《R 语言编程—基于 tidyverse》的书，欢迎您的阅读品鉴！ 
+
+该书的 [知乎交流平台](https://zhuanlan.zhihu.com/p/198185888), 欢迎您的留言讨论！
+
+该书的 QQ 读者群：875664831, 交流、答疑，欢迎您的加入！
+
+```{r echo=FALSE, out.width="0.7\\textwidth", fig.align="center"}
+knitr::include_graphics(path = "tidy-R-QQ.jpg")
+```
+
 **玩转数据120题**来自刘早起的 *Pandas 进阶修炼 120 题*，涵盖了数据处理、计算、可视化等常用操作，希望通过 120 道精心挑选的习题吃透 pandas.
  
 后来，中山大学博士陈熹提供了 R 语言版本。我[^ft1][^ft2]再来个更能体现 R 语言最新技术的 tidyverse 版本。
