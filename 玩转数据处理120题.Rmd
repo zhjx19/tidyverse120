@@ -1,5 +1,5 @@
 ---
-title: "**玩转数据120题——R语言tidyverse版本**"
+title: "**玩转数据120题——R语言tidyverse版本(更新版)**"
 author: 张敬信
 date: "`r Sys.Date()`"
 header-includes:
@@ -40,6 +40,8 @@ knitr::include_graphics(path = "tidy-R-QQ.jpg")
  
 后来，中山大学博士陈熹提供了 R 语言版本。我[^ft1][^ft2]再来个更能体现 R 语言最新技术的 tidyverse 版本。
 
+关于**更新版**：感谢`@鼠大米`对部分解法不够tidyverse的题目，提供了新解法(再加上我稍微修正)，主要是加入更好用的新函数`slice_*()`。
+
 
 [^ft1]: 我的 Github: https://github.com/zhjx19  
 [^ft2]: 我的知乎: https://www.zhihu.com/people/huc_zhangjingxin
@@ -67,6 +69,23 @@ df = tibble(
   )
 df
 ```
+
+- **补充：**按行录入式创建数据框
+
+```{r}
+df = tribble(
+  ~ grammer, ~ score,
+  "Python",  1,
+  "C",       2,
+  "Java",    NA,
+  "GO",      4,
+  NA,        5,
+  "SQL",     6,
+  "PHP",     7,
+  "Python",  10
+)
+```
+
 
 ### 问题2（筛选行）：提取含有字符串"Python"的行
 
@@ -112,8 +131,10 @@ df
 **代码及运行结果：**
 
 ```{r}
+# table(df$grammer)
+# 或者
 df %>%
-  count(grammer)   # 或者用 table(df$grammer)
+  count(grammer) 
 ```
 
 
@@ -129,7 +150,7 @@ df = df %>%
 df
 ```
 
-**注：** dplyr包提供了`fill()`函数，可以用前值或后值插补缺失值。
+**注：** tidyr包提供了`fill()`函数，可以用前值或后值插补缺失值。
 
 ### 题目7（筛选行）：提取popularity列中值大于3的行
 
@@ -174,7 +195,15 @@ df %>%
 **代码及运行结果：**
 
 ```{r}
-df$grammer
+# df$grammer    
+
+# 或者
+# df %>% 
+#  .$grammer    
+
+# 或者
+df %>% 
+  pull(grammer)
 ```
 
 **注：** R从数据框中提取出来就是字符向量。
@@ -234,9 +263,12 @@ df %>%
 **代码及运行结果：**
 
 ```{r}
-df %>%
-  filter(popularity == max(popularity))
-# 或者用df %>% top_n(1, popularity)
+df %>% 
+  slice_max(popularity)     
+
+# 或者
+# df %>%
+#  filter(popularity == max(popularity))
 ```
 
 
@@ -247,10 +279,12 @@ df %>%
 **代码及运行结果：**
 
 ```{r}
-tail(df)   # 默认是最后6行
+# tail(df)   # 默认是最后6行, 或者
+df %>% 
+  slice_tail(n = 6)
 ```
 
-**注：** 此外，`head()`查看前几行，dplyr包还提供了`sample_n()`和`sample_frac()`随机查看n行或某比例的行。
+**注：** 此外，`dplyr`包还提供了`slice_head()`查看前`n`行或前某比例的行，`slice_sample()`随机查看`n`行或某比例的行。
 
 ### 题目17（修改数据）：删除最后一行数据
 
@@ -271,10 +305,12 @@ df %>%
 **代码及运行结果：**
 
 ```{r}
-newrow = tibble(grammer="Perl", popularity=6)
-
 df %>%
-  bind_rows(newrow)
+  bind_rows(tibble(grammer="Perl", popularity=6)) 
+
+# 或者
+# df %>% 
+#   add_row(grammer="Perl", popularity=6)
 ```
 
  
@@ -286,10 +322,14 @@ df %>%
 
 ```{r}
 df %>%
-  arrange(desc(popularity))
+  arrange(-popularity)  
+
+# 或者
+# df %>%
+#  arrange(desc(popularity))
 ```
 
-**注：** 不套一层`desc()`, 是默认从小到大排序。
+**注：** 默认从小到大排序。
 
 ### 题目20（字符统计）：统计grammer列每个字符串的长度
 
@@ -324,10 +364,13 @@ df
 **代码及运行结果：**
 
 ```{r}
-head(df)
+head(df)   
+
+# 或者
+# df %>% 
+#  slice_head(n = 6)
 ```
  
-**注：** 此外，`tail()`查看后几行，dplyr包还提供了`sample_n()`和`sample_frac()`随机查看n行或某比例的行。
 
 ### 题目23（数据计算）：将salary列数据转换为最大值与最小值的平均值
 
@@ -337,7 +380,7 @@ head(df)
 
 ```{r}
 df = df %>%
-  separate(salary, into = c("low", "high"), sep = "-") %>%    # sep="-"也可以省略
+  separate(salary, into = c("low", "high"), sep = "-") %>%  # sep="-"也可以省略
   mutate(salary = (parse_number(low) + parse_number(high)) * 1000 / 2) %>%
   select(-c(low, high))
 df
@@ -376,7 +419,15 @@ df %>%
 library(lubridate)
 
 df %>% 
-  mutate(createTime = str_c(month(createTime), "-", day(createTime)))
+  mutate(createTime = str_sub(createTime, 6, 10))  
+
+# 或者
+# df %>% 
+#   mutate(createTime = str_extract(createTime, "(?<=-).*(?=\\s)"))
+
+# 或者          
+# df %>% 
+#  mutate(createTime = str_c(str_pad(month(createTime), 2, pad="0"), "-", day(createTime)))
 ```
 
 
@@ -414,23 +465,30 @@ summary(df)
 ```{r}
 df = df %>%
   mutate(class = case_when(
-    salary >= 0 & salary < 5000      ~ "低",
+    salary >= 0 & salary < 5000     ~ "低",
     salary >= 5000 & salary < 20000 ~ "中",
-TRUE                                ~ "高")) 
-# TRUE效果是其它
+    TRUE                            ~ "高"))  # TRUE效果是其它
 df
 ```
 
-或者用`cut()`函数：
+- 或者用`cut()`函数：
 
-```{r}
+```{r eval=FALSE}
 df %>% 
   mutate(class = cut(salary, 
                      breaks = c(0,5000,20000,Inf), 
-                         labels = c("低", "中", "高")))
+                     labels = c("低", "中", "高"),
+                     right = FALSE))
 ```
 
-**注：** 也可以用sjmisc包中的`rec()`，和SPSS的重新编码一样强大。
+- 或者用`sjmisc`包中的`rec()`，和SPSS的重新编码一样强大。
+
+```{r eval=FALSE}
+df %>%
+  mutate(class = sjmisc::rec(salary,
+    rec = "min:5000 = 低; 5000:20000 = 中; 20000:max = 高"))
+```
+
 
 ### 题目29（数据整理）：按salary列对数据降序排列
 
@@ -440,7 +498,7 @@ df %>%
 
 ```{r}
 df %>% 
-  arrange(desc(salary))
+  arrange(-salary)  # 或用 desc(salary)
 ```
 
 
@@ -462,12 +520,8 @@ df %>%
 **代码及运行结果：**
 
 ```{r}
-median(df$salary)
-```
-
-或者用
-
-```{r}
+# median(df$salary)  
+# 或者
 df %>% 
   summarise(salary_med = median(salary))
 ```
@@ -506,6 +560,9 @@ df %>%
 ```{r}
 df %>% 
   select(-class)
+# 或者
+# df %>% 
+#  select(-last_col())  # 同last_col(0)
 ```
  
 ### 题目35（数据操作）：将df的第1列与第2列合并为新的一列
@@ -555,7 +612,8 @@ df %>%
 **代码及运行结果：**
   
 ```{r}
-bind_rows(df[1,], df[nrow(df),])
+df %>% 
+  slice(1, n())
 ```
 
 
@@ -566,8 +624,8 @@ bind_rows(df[1,], df[nrow(df),])
 **代码及运行结果：**
   
 ```{r}
-bind_rows(df, df[8,]) %>% 
-  tail()
+df %>% 
+  bind_rows(slice(., 8))
 ```
   
  
@@ -592,7 +650,8 @@ df %>%
 ```{r}
 df %>% 
   distinct(createTime, .keep_all = TRUE) %>% 
-  column_to_rownames("createTime")
+  column_to_rownames("createTime") %>% 
+  head()
 ```
   
 **注：** 行索引不允许有重复，所以先做了一步去重。
@@ -686,8 +745,10 @@ df %>%
 
 
 ```{r}
+# table(df$education)
+# 或者
 df %>% 
-  count(education)   # 或者用table(df$education)
+  count(education)   
 ```
   
   
@@ -711,7 +772,7 @@ df %>%
 ```{r}
 df %>% 
   filter(salary + new > 60000) %>% 
-  slice((n()-2):n())
+  slice_head(n = 3)
 ```
   
 ## Part III 提高
@@ -737,8 +798,10 @@ df
 
     
 ```{r}
-df %>% 
-  head(3)
+head(df, 3)   
+# 或者
+# df %>% 
+#  slice_head(n = 3) 
 ```
   
   
@@ -860,7 +923,8 @@ df %>%
 **代码及运行结果：**
 
 ```{r}
-as_tibble(names(df))
+names(df) %>% 
+  as_tibble()
 ```
   
 ### 题目62（异常值处理）：输出所有换手率不是数字的行
@@ -1056,7 +1120,8 @@ ggplot() +
 **代码及运行结果：**
 
 ```{r}
-bind_cols(df[,1:3], map_dfc(df[,-(1:3)], lag, n = 5))
+df %>% 
+  mutate(across(4:18, ~ lag(.x, 5)))
 ```
 
  
@@ -1069,10 +1134,10 @@ bind_cols(df[,1:3], map_dfc(df[,-(1:3)], lag, n = 5))
 **代码及运行结果：**
 
 ```{r}
-bind_cols(df[,1:3], map_dfc(df[,-(1:3)], lead, n = 5))
+df %>% 
+  mutate(across(4:18, ~ lead(.x, 5)))
 ```
 
- 
 
 ### 题目77（数据操作）：计算开盘价的累积平均
 
@@ -1252,11 +1317,12 @@ setdiff(df$col1, df$col2)
 **代码及运行结果：**
 
 ```{r}
-tibble(nums = c(df$col1, df$col2)) %>% 
-  group_by(nums) %>% 
-  summarise(frq = n()) %>% 
-  arrange(desc(frq)) %>% 
-  slice(1:3)
+df %>% 
+  pivot_longer(1:2,
+               names_to = "col",
+               values_to = "value") %>% 
+  count(value, sort = TRUE) %>% 
+  slice_max(n, n = 3)
 ```
 
  
@@ -1286,10 +1352,21 @@ rlt[[1]][1:3,]
 **代码及运行结果：**
 
 ```{r}
-which(df$col1 %% 5 == 0)
+# which(df$col1 %% 5 == 0)  
+# 或者
+df %>% 
+  mutate(id = row_number()) %>% 
+  filter(col1 %% 5 == 0) %>% 
+  pull(id)
 ```
 
- 
+- 选取满足条件的索引，通常用途还是用来选出满足条件的行，不兜圈子做法：
+
+```{r}
+df %>% 
+  filter(col1 %% 5 == 0)
+```
+
 
 ### 题目92（数据计算）：计算第1列的1阶差分
 
@@ -1298,11 +1375,12 @@ which(df$col1 %% 5 == 0)
 **代码及运行结果：**
 
 ```{r}
+# diff(df$col1)  
+# 或者
 df %>% 
   mutate(diff1 = col1 - lag(col1))
 ```
 
-**注：**若只是要数值，用`diff(df$col1)`即可。
 
 ### 题目93（数据操作）：将col1, col2, col3三列顺序颠倒
 
@@ -1335,11 +1413,21 @@ df[c(1,10,15),1]
 **代码及运行结果：**
 
 ```{r}
-rlt = df %>% 
-  mutate(diff = sign(col1 - lag(col1)) + sign(col1 - lead(col1))) 
-
-which(rlt$diff == 2)
+df %>% 
+  mutate(diff = sign(col1 - lag(col1)) + sign(col1 - lead(col1)),
+         id = row_number()) %>% 
+  filter(diff == 2) %>% 
+  pull(id)
 ```
+
+- 不兜圈子做法：
+
+```{r}
+df %>% 
+  mutate(diff = sign(col1 - lag(col1)) + sign(col1 - lead(col1))) %>% 
+  filter(diff == 2)
+```
+
 
  
 ### 题目96（数据计算）：按行计算df每一行的均值
@@ -1349,11 +1437,25 @@ which(rlt$diff == 2)
 **代码及运行结果：**
 
 ```{r}
-rowMeans(df)    # 或者apply(df, 1, mean)
+# rowMeans(df)    
+# 或者
+# apply(df, 1, mean)
+
+# 或者
+df %>% 
+  mutate(row_avg = (col1 + col2 + col3) / 3)
+
+# 或者
+# df %>% 
+#  rowwise() %>% 
+#  mutate(row_avg = mean(c_across()))
+
+# 或者
+# df %>% 
+#  mutate(row_avg = pmap_dbl(., ~ mean(c(...))))
 ```
 
  
-
 ### 题目97（数据计算）：对第二列计算步长为3的移动平均值
 
 *难度：**$\star\star\star$
@@ -1385,9 +1487,10 @@ df %>%
 **代码及运行结果：**
 
 ```{r}
+# df[df$col1 > 50, 1] = "高"
+# 或者
 df %>% 
   mutate(col1 = sjmisc::rec(col1, rec = "50:max=高; else=copy"))
-# 或者用 df[df$col1 > 50, 1] = "高"
 ```
 
  **注：**这里采用更有实用价值的重新编码。
@@ -1440,8 +1543,10 @@ df = read_csv("datas/数据2_101-120涉及.csv") %>%
 **代码及运行结果：**
 
 ```{r}
+# df[seq(1, nrow(df), 20),]
+# 或者
 df %>% 
-  slice(seq(1, n(), by = 20))  # 或者df[seq(1, nrow(df), 20),]
+  slice(seq(1, n(), by = 20))  
 ```
 
  
@@ -1453,9 +1558,13 @@ df %>%
 
 ```{r}
 set.seed(123)
-df = tibble(val = runif(10) ^ 10) %>% 
-  round(3)
-df
+df = tibble(val = runif(10) ^ 10) 
+# 三位小数
+df %>% 
+  mutate(val = scales::number(val, accuracy = 0.001))
+# 科学记数法
+df %>% 
+  mutate(val =  scales::scientific(val, 2))
 ```
 
 
@@ -1478,9 +1587,23 @@ df %>%
 **代码及运行结果：**
 
 ```{r}
-order(df$val, decreasing = TRUE)[3]
+# order(df$val, decreasing = TRUE)[3]
+# 或者
+df %>% 
+  mutate(id = row_number()) %>% 
+  arrange(-val) %>% 
+  slice(3) %>% 
+  pull(id)
 ```
- 
+
+- 不兜圈子做法：
+
+```{r}
+df %>% 
+  arrange(-val) %>% 
+  slice(3)
+```
+
 
 ### 题目107（数据操作）：反转df的行
 
@@ -1490,7 +1613,7 @@ order(df$val, decreasing = TRUE)[3]
 
 ```{r}
 df %>% 
-  slice(rev(1:n()))    # 或者 df[rev(1:nrow(df)),]
+  slice(rev(1:n()))    # 或者用 n():1
 ```
 
  
@@ -1501,14 +1624,14 @@ df %>%
 **代码及运行结果：**
 
 ```{r}
-df1 <- tibble(
+df1 = tibble(
   key1 = c("K0","K0","K1","K2"),
   key2 = c("K0","K1","K0","K1"),
   A = str_c('A', 0:3),
   B = str_c('B', 0:3)
 )
 
-df2 <- tibble(
+df2 = tibble(
   key1 = c("K0","K1","K1","K2"),
   key2 = str_c("K", rep(0,4)),
   C = str_c('C', 0:3),
@@ -1544,7 +1667,7 @@ df1 %>%
 **代码及运行结果：**
 
 ```{r message=FALSE}
-df <- read_csv("datas/数据1_101-120涉及.csv", 
+df = read_csv("datas/数据1_101-120涉及.csv", 
           locale = locale(encoding = "GBK")) %>%
 glimpse()
 ```
@@ -1557,9 +1680,21 @@ glimpse()
 **代码及运行结果：**
 
 ```{r}
-which(df$secondType == df$thirdType)
+# which(df$secondType == df$thirdType)
+# 或者
+df %>% 
+  mutate(id = row_number()) %>% 
+  filter(secondType == thirdType) %>% 
+  pull(id)
 ```
  
+- 不兜圈子：
+
+```{r}
+df %>% 
+  filter(secondType == thirdType)
+```
+
 
 ### 题目112（数据操作）：查找薪资大于平均薪资的第三个数据
 
@@ -1677,8 +1812,5 @@ df %>%
 df %>% 
   group_by(district) %>% 
   summarise(salary_avg = mean(salary)) %>% 
-  top_n(1, salary_avg)
+  slice_max(salary_avg)
 ```
-
- 
-
