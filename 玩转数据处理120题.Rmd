@@ -20,6 +20,8 @@ knitr::opts_chunk$set(
 
 ```{r include=FALSE}
 options(tibble.print_max = 6, tibble.print_min = 6)
+library(showtext)
+showtext_auto()
 ```
 
 **关于作者**：
